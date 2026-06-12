@@ -36,6 +36,11 @@ const elements = {
   setupCycleLength: document.querySelector("#setupCycleLength"),
   setupCycleStartDate: document.querySelector("#setupCycleStartDate"),
   setupCycleSubjects: document.querySelector("#setupCycleSubjects"),
+  exportData: document.querySelector("#exportData"),
+  copyTransferCode: document.querySelector("#copyTransferCode"),
+  transferCode: document.querySelector("#transferCode"),
+  importTransferCode: document.querySelector("#importTransferCode"),
+  importData: document.querySelector("#importData"),
   quickActivityForm: document.querySelector("#quickActivityForm"),
   quickActivityName: document.querySelector("#quickActivityName"),
   quickActivityDate: document.querySelector("#quickActivityDate"),
@@ -349,6 +354,9 @@ function wireEvents() {
 
   renderSetup();
   elements.setupForm.addEventListener("submit", handleSetupSubmit);
+  elements.exportData.addEventListener("click", handleExportData);
+  elements.copyTransferCode.addEventListener("click", handleCopyTransferCode);
+  elements.importData.addEventListener("click", handleImportData);
 
   elements.quickActivityDate.value = toDateInput(new Date());
   elements.quickActivityForm.addEventListener("submit", handleQuickActivitySubmit);
@@ -653,6 +661,95 @@ function handleSetupSubmit(event) {
   render();
   playSound("success");
   showToast("School setup saved. Planner regenerated.");
+}
+
+function createTransferPayload() {
+  const exportedState = normalizeState(JSON.parse(JSON.stringify(state)));
+  exportedState.aiSettings = {
+    ...exportedState.aiSettings,
+    apiKey: "",
+    allowPaidOpenAi: false,
+  };
+
+  return {
+    app: "Student Command",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    state: exportedState,
+  };
+}
+
+function encodeTransferPayload(payload) {
+  const bytes = new TextEncoder().encode(JSON.stringify(payload));
+  let binary = "";
+  for (let index = 0; index < bytes.length; index += 0x8000) {
+    binary += String.fromCharCode(...bytes.slice(index, index + 0x8000));
+  }
+  return `STUDENT-COMMAND-1:${btoa(binary)}`;
+}
+
+function decodeTransferCode(code) {
+  const trimmed = String(code || "").trim();
+  if (!trimmed) throw new Error("empty");
+  if (trimmed.startsWith("{")) return JSON.parse(trimmed);
+
+  const rawCode = trimmed.replace(/\s+/g, "");
+  const encoded = rawCode.startsWith("STUDENT-COMMAND-1:") ? rawCode.slice("STUDENT-COMMAND-1:".length) : rawCode;
+  const binary = atob(encoded);
+  const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+function stateFromTransferCode(code) {
+  const payload = decodeTransferCode(code);
+  const importedState = payload && payload.state ? payload.state : payload;
+  const normalized = normalizeState(importedState);
+  normalized.aiSettings.apiKey = "";
+  normalized.aiSettings.allowPaidOpenAi = false;
+  return normalized;
+}
+
+function handleExportData() {
+  elements.transferCode.value = encodeTransferPayload(createTransferPayload());
+  playSound("success");
+  showToast("Transfer code created. Copy it to your phone.");
+}
+
+async function handleCopyTransferCode() {
+  if (!elements.transferCode.value.trim()) handleExportData();
+
+  try {
+    await navigator.clipboard.writeText(elements.transferCode.value);
+    playSound("success");
+    showToast("Transfer code copied.");
+  } catch {
+    elements.transferCode.focus();
+    elements.transferCode.select();
+    playSound("warning");
+    showToast("Copy is blocked. Select the code and copy it manually.");
+  }
+}
+
+function handleImportData() {
+  let importedState;
+  try {
+    importedState = stateFromTransferCode(elements.importTransferCode.value);
+  } catch {
+    playSound("warning");
+    showToast("That transfer code is not valid.");
+    return;
+  }
+
+  const confirmed = window.confirm("Import this Student Command backup? This replaces the planner data on this device.");
+  if (!confirmed) return;
+
+  Object.assign(state, importedState);
+  saveState();
+  render();
+  switchView("today");
+  elements.importTransferCode.value = "";
+  playSound("success");
+  showToast("Planner data imported on this device.");
 }
 
 function parseCycleSubjects(value, cycleLength) {

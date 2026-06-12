@@ -1,16 +1,16 @@
-const CACHE_NAME = "student-command-v31";
+const CACHE_NAME = "student-command-v32";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./install.html",
-  "./styles.css?v=30",
-  "./app.js?v=30",
-  "./manifest.webmanifest?v=30",
-  "./assets/command-sky-bg.png?v=30",
-  "./icons/icon.svg?v=30",
-  "./icons/icon-192.png?v=30",
-  "./icons/icon-512.png?v=30",
-  "./icons/apple-touch-icon.png?v=30",
+  "./styles.css?v=32",
+  "./app.js?v=32",
+  "./manifest.webmanifest?v=32",
+  "./assets/command-sky-bg.png?v=32",
+  "./icons/icon.svg?v=32",
+  "./icons/icon-192.png?v=32",
+  "./icons/icon-512.png?v=32",
+  "./icons/apple-touch-icon.png?v=32",
 ];
 
 self.addEventListener("install", (event) => {

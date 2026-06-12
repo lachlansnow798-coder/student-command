@@ -8,16 +8,16 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Student Command" />
     <title>Student Command</title>
-    <link rel="manifest" href="manifest.webmanifest?v=30" />
-    <link rel="icon" href="icons/icon.svg?v=30" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=30" />
-    <link rel="stylesheet" href="styles.css?v=30" />
+    <link rel="manifest" href="manifest.webmanifest?v=32" />
+    <link rel="icon" href="icons/icon.svg?v=32" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=32" />
+    <link rel="stylesheet" href="styles.css?v=32" />
   </head>
   <body>
     <div class="app-shell">
       <aside class="sidebar" aria-label="Main navigation">
         <div class="brand">
-          <div class="brand-mark"><img src="icons/icon-192.png?v=30" alt="" /></div>
+          <div class="brand-mark"><img src="icons/icon-192.png?v=32" alt="" /></div>
           <div>
             <p>Student Command</p>
             <span>Grade 8 planner</span>
@@ -245,6 +245,33 @@
 
             <button class="primary-button" type="submit">Save school setup</button>
           </form>
+
+          <section class="panel transfer-panel" aria-label="Move planner data between devices">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Device transfer</p>
+                <h2>Move your planner to your phone</h2>
+              </div>
+            </div>
+            <p class="helper-text">
+              Export on your Mac, then paste the code into Student Command on your iPhone. This replaces the data on
+              the device you import into. Your AI API key is never included.
+            </p>
+            <div class="transfer-grid">
+              <div class="transfer-block">
+                <h3>1. Export from this device</h3>
+                <button id="exportData" class="primary-button" type="button">Create transfer code</button>
+                <button id="copyTransferCode" class="ghost-button" type="button">Copy code</button>
+                <textarea id="transferCode" rows="7" readonly placeholder="Your transfer code will appear here."></textarea>
+              </div>
+              <div class="transfer-block">
+                <h3>2. Import on your other device</h3>
+                <textarea id="importTransferCode" rows="7" placeholder="Paste a Student Command transfer code here."></textarea>
+                <button id="importData" class="primary-button" type="button">Import and replace this device</button>
+                <p class="helper-text">Only import your own code. It contains private planner data.</p>
+              </div>
+            </div>
+          </section>
         </section>
 
         <section class="view" id="tasksView" data-panel="tasks">
@@ -546,6 +573,6 @@
 
     <div id="appToast" class="app-toast" role="status" aria-live="polite"></div>
 
-    <script src="app.js?v=30"></script>
+    <script src="app.js?v=32"></script>
   </body>
 </html>
