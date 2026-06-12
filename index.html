@@ -8,16 +8,16 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Student Command" />
     <title>Student Command</title>
-    <link rel="manifest" href="manifest.webmanifest?v=28" />
-    <link rel="icon" href="icons/icon.svg?v=28" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=28" />
-    <link rel="stylesheet" href="styles.css?v=28" />
+    <link rel="manifest" href="manifest.webmanifest?v=29" />
+    <link rel="icon" href="icons/icon.svg?v=29" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=29" />
+    <link rel="stylesheet" href="styles.css?v=29" />
   </head>
   <body>
     <div class="app-shell">
       <aside class="sidebar" aria-label="Main navigation">
         <div class="brand">
-          <div class="brand-mark"><img src="icons/icon-192.png?v=28" alt="" /></div>
+          <div class="brand-mark"><img src="icons/icon-192.png?v=29" alt="" /></div>
           <div>
             <p>Student Command</p>
             <span>Grade 8 planner</span>
@@ -27,6 +27,7 @@
         <nav class="nav-list" aria-label="Sections">
           <button class="nav-item is-active" data-view="today" type="button">Today</button>
           <button class="nav-item" data-view="setup" type="button">Setup</button>
+          <a class="nav-link" href="install.html">Install</a>
           <button class="nav-item" data-view="tasks" type="button">Tasks</button>
           <button class="nav-item" data-view="import" type="button">Import</button>
           <button class="nav-item" data-view="quiz" type="button">Quiz</button>
@@ -51,6 +52,7 @@
           <div class="topbar-actions">
             <button id="soundToggle" class="ghost-button" type="button">Sound on</button>
             <button id="installApp" class="ghost-button install-button" type="button" hidden>Install app</button>
+            <a class="ghost-button topbar-link" href="install.html">Install guide</a>
             <button id="resetDemo" class="ghost-button" type="button" title="Reload sample data">Reset demo</button>
           </div>
         </header>
@@ -544,6 +546,6 @@
 
     <div id="appToast" class="app-toast" role="status" aria-live="polite"></div>
 
-    <script src="app.js?v=28"></script>
+    <script src="app.js?v=29"></script>
   </body>
 </html>

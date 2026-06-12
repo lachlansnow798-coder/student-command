@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#071b68" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Student Command" />
+    <title>Install Student Command</title>
+    <link rel="manifest" href="manifest.webmanifest?v=29" />
+    <link rel="icon" href="icons/icon.svg?v=29" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=29" />
+    <link rel="stylesheet" href="styles.css?v=29" />
+  </head>
+  <body class="install-page">
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Install navigation">
+        <a class="brand brand-link" href="index.html" aria-label="Open Student Command">
+          <div class="brand-mark"><img src="icons/icon-192.png?v=29" alt="" /></div>
+          <div>
+            <p>Student Command</p>
+            <span>Student planner</span>
+          </div>
+        </a>
+
+        <nav class="nav-list" aria-label="Sections">
+          <a class="nav-link" href="index.html">Open app</a>
+          <a class="nav-link is-active" href="install.html">Install</a>
+          <a class="nav-link" href="https://github.com/lachlansnow798-coder/student-command">Source code</a>
+        </nav>
+
+        <div class="focus-card">
+          <span class="eyebrow">Distribution rule</span>
+          <strong>One link first. Native stores later.</strong>
+          <p>The PWA route lets any student try it without paying for app stores or signed installers.</p>
+        </div>
+      </aside>
+
+      <main class="main-content install-main">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Install guide</p>
+            <h1>Install Student Command on your device.</h1>
+          </div>
+          <div class="topbar-actions">
+            <a class="ghost-button topbar-link" href="index.html">Open app</a>
+            <button id="browserInstall" class="primary-button" type="button" hidden>Install app</button>
+          </div>
+        </header>
+
+        <section class="install-hero" aria-label="Shareable app link">
+          <div class="panel install-lead">
+            <p class="eyebrow">Free public link</p>
+            <h2>Share this link with students.</h2>
+            <p>
+              Student Command runs as an installable web app. It can live on the home screen or desktop like an app,
+              but it does not need the App Store, Play Store, or a paid developer account.
+            </p>
+            <div class="install-copy">
+              <label for="publicLink">App link</label>
+              <input id="publicLink" type="text" readonly value="https://lachlansnow798-coder.github.io/student-command/" />
+              <button id="copyPublicLink" class="ghost-button" type="button">Copy link</button>
+              <span id="copyStatus" class="helper-text" aria-live="polite">Ready to share.</span>
+            </div>
+          </div>
+
+          <div class="panel install-proof">
+            <span class="eyebrow">Best first version</span>
+            <strong>Zero dollars. One link. Works worldwide.</strong>
+            <p>
+              A native installer sounds more official, but it adds platform rules, signing, store review, and support
+              problems before you even know if students want the app.
+            </p>
+          </div>
+        </section>
+
+        <section class="section-header">
+          <div>
+            <p class="eyebrow">Device steps</p>
+            <h2>How to install</h2>
+          </div>
+        </section>
+
+        <section class="platform-grid" aria-label="Install steps by device">
+          <article class="platform-card">
+            <span class="platform-badge">iPhone</span>
+            <h3>Safari home screen install</h3>
+            <ol>
+              <li>Open the app link in Safari.</li>
+              <li>Tap the Share button.</li>
+              <li>Tap Add to Home Screen.</li>
+              <li>Tap Add.</li>
+            </ol>
+          </article>
+
+          <article class="platform-card">
+            <span class="platform-badge">Android</span>
+            <h3>Chrome install</h3>
+            <ol>
+              <li>Open the app link in Chrome.</li>
+              <li>Tap the menu button.</li>
+              <li>Tap Install app or Add to Home screen.</li>
+              <li>Open Student Command from the app icon.</li>
+            </ol>
+          </article>
+
+          <article class="platform-card">
+            <span class="platform-badge">Mac</span>
+            <h3>Chrome or Edge install</h3>
+            <ol>
+              <li>Open the app link in Chrome or Edge.</li>
+              <li>Click the install icon in the address bar.</li>
+              <li>Click Install.</li>
+              <li>Launch it from Applications or Launchpad.</li>
+            </ol>
+          </article>
+
+          <article class="platform-card">
+            <span class="platform-badge">Windows</span>
+            <h3>Desktop app install</h3>
+            <ol>
+              <li>Open the app link in Chrome or Edge.</li>
+              <li>Click the install icon in the address bar.</li>
+              <li>Click Install.</li>
+              <li>Pin it to Start or the taskbar.</li>
+            </ol>
+          </article>
+        </section>
+
+        <section class="install-notes">
+          <div class="panel">
+            <p class="eyebrow">What this is</p>
+            <h2>PWA install</h2>
+            <p>
+              A PWA is a Progressive Web App: a website that can be installed and opened like an app. It is the right
+              public version while Student Command is still proving whether students actually use it.
+            </p>
+          </div>
+
+          <div class="panel">
+            <p class="eyebrow">What this is not yet</p>
+            <h2>Native installer</h2>
+            <p>
+              iPhone native distribution needs TestFlight or the App Store. Mac and Windows native downloads need
+              separate signed builds. Those are later steps after real students test the free version.
+            </p>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const fallbackUrl = "https://lachlansnow798-coder.github.io/student-command/";
+      const publicLink = document.querySelector("#publicLink");
+      const copyButton = document.querySelector("#copyPublicLink");
+      const copyStatus = document.querySelector("#copyStatus");
+      const browserInstall = document.querySelector("#browserInstall");
+
+      if (location.protocol.startsWith("http") && location.hostname.includes("github.io")) {
+        publicLink.value = new URL("./", location.href).href;
+      }
+
+      copyButton.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(publicLink.value || fallbackUrl);
+          copyStatus.textContent = "Copied.";
+        } catch {
+          publicLink.select();
+          copyStatus.textContent = "Select the link and copy it.";
+        }
+      });
+
+      let installPrompt = null;
+      window.addEventListener("beforeinstallprompt", (event) => {
+        event.preventDefault();
+        installPrompt = event;
+        browserInstall.hidden = false;
+      });
+
+      browserInstall.addEventListener("click", async () => {
+        if (!installPrompt) return;
+        installPrompt.prompt();
+        await installPrompt.userChoice;
+        installPrompt = null;
+        browserInstall.hidden = true;
+      });
+    </script>
+  </body>
+</html>
