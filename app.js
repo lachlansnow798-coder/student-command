@@ -679,29 +679,78 @@ function createTransferPayload() {
   };
 }
 
-function encodeTransferPayload(payload) {
-  const bytes = new TextEncoder().encode(JSON.stringify(payload));
+function bytesToBase64(bytes) {
   let binary = "";
   for (let index = 0; index < bytes.length; index += 0x8000) {
     binary += String.fromCharCode(...bytes.slice(index, index + 0x8000));
   }
-  return `STUDENT-COMMAND-1:${btoa(binary)}`;
+  return btoa(binary);
 }
 
-function decodeTransferCode(code) {
+function base64ToBytes(encoded) {
+  const normalized = encoded.replace(/-/g, "+").replace(/_/g, "/");
+  const binary = atob(normalized);
+  return Uint8Array.from(binary, (character) => character.charCodeAt(0));
+}
+
+async function compressBytes(bytes) {
+  if (!("CompressionStream" in window)) return null;
+  const stream = new Blob([bytes]).stream().pipeThrough(new CompressionStream("gzip"));
+  const buffer = await new Response(stream).arrayBuffer();
+  return new Uint8Array(buffer);
+}
+
+async function decompressBytes(bytes) {
+  if (!("DecompressionStream" in window)) throw new Error("decompression unavailable");
+  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
+  const buffer = await new Response(stream).arrayBuffer();
+  return new Uint8Array(buffer);
+}
+
+async function encodeTransferPayload(payload) {
+  const bytes = new TextEncoder().encode(JSON.stringify(payload));
+  const compressed = await compressBytes(bytes);
+
+  if (compressed && compressed.length < bytes.length) {
+    return `STUDENT-COMMAND-GZIP-1:${bytesToBase64(compressed)}`;
+  }
+
+  return `STUDENT-COMMAND-1:${bytesToBase64(bytes)}`;
+}
+
+function extractTransferCode(code) {
   const trimmed = String(code || "").trim();
   if (!trimmed) throw new Error("empty");
-  if (trimmed.startsWith("{")) return JSON.parse(trimmed);
+  if (trimmed.startsWith("{")) return { kind: "json", value: trimmed };
 
-  const rawCode = trimmed.replace(/\s+/g, "");
-  const encoded = rawCode.startsWith("STUDENT-COMMAND-1:") ? rawCode.slice("STUDENT-COMMAND-1:".length) : rawCode;
-  const binary = atob(encoded);
-  const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+  const prefixes = ["STUDENT-COMMAND-GZIP-1:", "STUDENT-COMMAND-1:"];
+  for (const prefix of prefixes) {
+    const index = trimmed.indexOf(prefix);
+    if (index === -1) continue;
+    const afterPrefix = trimmed.slice(index + prefix.length);
+    const match = afterPrefix.match(/[A-Za-z0-9+/=_-]+/);
+    if (!match) throw new Error("missing code");
+    return { kind: prefix.includes("GZIP") ? "gzip" : "raw", value: match[0] };
+  }
+
+  const candidates = trimmed.match(/[A-Za-z0-9+/=_-]{120,}/g);
+  if (!candidates?.length) throw new Error("missing code");
+  return { kind: "raw", value: candidates.sort((a, b) => b.length - a.length)[0] };
+}
+
+async function decodeTransferCode(code) {
+  const extracted = extractTransferCode(code);
+  if (extracted.kind === "json") return JSON.parse(extracted.value);
+
+  let bytes = base64ToBytes(extracted.value);
+  if (extracted.kind === "gzip") {
+    bytes = await decompressBytes(bytes);
+  }
   return JSON.parse(new TextDecoder().decode(bytes));
 }
 
-function stateFromTransferCode(code) {
-  const payload = decodeTransferCode(code);
+async function stateFromTransferCode(code) {
+  const payload = await decodeTransferCode(code);
   const importedState = payload && payload.state ? payload.state : payload;
   const normalized = normalizeState(importedState);
   normalized.aiSettings.apiKey = "";
@@ -709,14 +758,26 @@ function stateFromTransferCode(code) {
   return normalized;
 }
 
-function handleExportData() {
-  elements.transferCode.value = encodeTransferPayload(createTransferPayload());
+async function handleExportData() {
+  elements.exportData.disabled = true;
+  elements.exportData.textContent = "Creating code...";
+  try {
+    elements.transferCode.value = await encodeTransferPayload(createTransferPayload());
+  } catch {
+    elements.exportData.disabled = false;
+    elements.exportData.textContent = "Create short transfer code";
+    playSound("warning");
+    showToast("Could not create transfer code.");
+    return;
+  }
+  elements.exportData.disabled = false;
+  elements.exportData.textContent = "Create short transfer code";
   playSound("success");
-  showToast("Transfer code created. Copy it to your phone.");
+  showToast("Short transfer code created. Copy it to your phone.");
 }
 
 async function handleCopyTransferCode() {
-  if (!elements.transferCode.value.trim()) handleExportData();
+  if (!elements.transferCode.value.trim()) await handleExportData();
 
   try {
     await navigator.clipboard.writeText(elements.transferCode.value);
@@ -730,15 +791,21 @@ async function handleCopyTransferCode() {
   }
 }
 
-function handleImportData() {
+async function handleImportData() {
   let importedState;
+  elements.importData.disabled = true;
+  elements.importData.textContent = "Checking code...";
   try {
-    importedState = stateFromTransferCode(elements.importTransferCode.value);
+    importedState = await stateFromTransferCode(elements.importTransferCode.value);
   } catch {
+    elements.importData.disabled = false;
+    elements.importData.textContent = "Import and replace this device";
     playSound("warning");
-    showToast("That transfer code is not valid.");
+    showToast("That transfer code is not valid or was cut off.");
     return;
   }
+  elements.importData.disabled = false;
+  elements.importData.textContent = "Import and replace this device";
 
   const confirmed = window.confirm("Import this Student Command backup? This replaces the planner data on this device.");
   if (!confirmed) return;
