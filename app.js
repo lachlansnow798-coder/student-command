@@ -269,6 +269,14 @@ function registerServiceWorker() {
   });
 }
 
+function isIosDevice() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
+function isStandaloneMode() {
+  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+
 function generatePlanIfNeeded() {
   const today = startOfDay(new Date());
   const end = addDays(today, 14);
@@ -288,16 +296,31 @@ function generatePlanIfNeeded() {
 
 function wireEvents() {
   let installPrompt = null;
+  const needsIosInstallSteps = isIosDevice() && !isStandaloneMode();
+
+  if (needsIosInstallSteps) {
+    elements.installApp.hidden = false;
+    elements.installApp.textContent = "iPhone install steps";
+  }
 
   window.addEventListener("beforeinstallprompt", (event) => {
     event.preventDefault();
     installPrompt = event;
+    elements.installApp.textContent = "Install app";
     elements.installApp.hidden = false;
   });
 
   elements.installApp.addEventListener("click", async () => {
-    if (!installPrompt) return;
     playSound("tap");
+    if (!installPrompt) {
+      if (needsIosInstallSteps) {
+        showToast("On iPhone: tap Share, then Add to Home Screen.");
+        window.location.href = "install.html#iphone";
+        return;
+      }
+      window.location.href = "install.html";
+      return;
+    }
     installPrompt.prompt();
     await installPrompt.userChoice;
     installPrompt = null;
