@@ -8,16 +8,16 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Student Command" />
     <title>Install Student Command</title>
-    <link rel="manifest" href="manifest.webmanifest?v=33" />
-    <link rel="icon" href="icons/icon.svg?v=33" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=33" />
-    <link rel="stylesheet" href="styles.css?v=33" />
+    <link rel="manifest" href="manifest.webmanifest?v=34" />
+    <link rel="icon" href="icons/icon.svg?v=34" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=34" />
+    <link rel="stylesheet" href="styles.css?v=34" />
   </head>
   <body class="install-page">
     <div class="app-shell">
       <aside class="sidebar" aria-label="Install navigation">
         <a class="brand brand-link" href="index.html" aria-label="Open Student Command">
-          <div class="brand-mark"><img src="icons/icon-192.png?v=33" alt="" /></div>
+          <div class="brand-mark"><img src="icons/icon-192.png?v=34" alt="" /></div>
           <div>
             <p>Student Command</p>
             <span>Student planner</span>
@@ -27,7 +27,6 @@
         <nav class="nav-list" aria-label="Sections">
           <a class="nav-link" href="index.html">Open app</a>
           <a class="nav-link is-active" href="install.html">Install</a>
-          <a class="nav-link" href="https://github.com/lachlansnow798-coder/student-command">Source code</a>
         </nav>
 
         <div class="focus-card">
@@ -62,9 +61,12 @@
               <p>Open the link in Safari. If you do not see the Share button, tap the three dots at the bottom right first.</p>
             </div>
             <div class="install-copy">
-              <label for="publicLink">App link</label>
-              <input id="publicLink" type="text" readonly value="https://lachlansnow798-coder.github.io/student-command/" />
-              <button id="copyPublicLink" class="ghost-button" type="button">Copy link</button>
+              <input id="publicLink" type="hidden" />
+              <div class="share-link-card" aria-label="Student Command install link">
+                <strong>Student Command install link</strong>
+                <span>Copies the current public install page.</span>
+              </div>
+              <button id="copyPublicLink" class="ghost-button" type="button">Copy install link</button>
               <span id="copyStatus" class="helper-text" aria-live="polite">Ready to share.</span>
             </div>
           </div>
@@ -156,23 +158,20 @@
     </div>
 
     <script>
-      const fallbackUrl = "https://lachlansnow798-coder.github.io/student-command/";
+      const fallbackUrl = new URL("./", location.href).href;
       const publicLink = document.querySelector("#publicLink");
       const copyButton = document.querySelector("#copyPublicLink");
       const copyStatus = document.querySelector("#copyStatus");
       const browserInstall = document.querySelector("#browserInstall");
 
-      if (location.protocol.startsWith("http") && location.hostname.includes("github.io")) {
-        publicLink.value = new URL("./", location.href).href;
-      }
+      publicLink.value = new URL("install.html", location.href).href;
 
       copyButton.addEventListener("click", async () => {
         try {
           await navigator.clipboard.writeText(publicLink.value || fallbackUrl);
           copyStatus.textContent = "Copied.";
         } catch {
-          publicLink.select();
-          copyStatus.textContent = "Select the link and copy it.";
+          copyStatus.textContent = "Copy was blocked. Use the browser address bar.";
         }
       });
 

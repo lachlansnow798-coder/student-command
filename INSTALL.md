@@ -1,12 +1,6 @@
 # Install Student Command
 
-Free public app link:
-
-https://lachlansnow798-coder.github.io/student-command/
-
-Full install guide:
-
-https://lachlansnow798-coder.github.io/student-command/install.html
+Open the published Student Command install guide.
 
 iPhone: Safari -> Share -> Add to Home Screen.
 

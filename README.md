@@ -34,11 +34,7 @@ Do not publish local build artifacts like `Student Command.app`, `tmp/`, or zip 
 
 ## Install
 
-Use the public install guide:
-
-```txt
-https://lachlansnow798-coder.github.io/student-command/install.html
-```
+Use the public install guide from the published Student Command site.
 
 On iPhone: open the website in Safari, tap Share, then Add to Home Screen.
 
