@@ -24,6 +24,7 @@ const KNOWN_TIMETABLE_SUBJECTS = [
 
 const state = loadState();
 let currentImportProposals = [];
+let setupTimetableProposal = null;
 let audioContext = null;
 let toastTimer = null;
 let localAiStatusMessage = "";
@@ -56,6 +57,13 @@ const elements = {
   setupCycleLength: document.querySelector("#setupCycleLength"),
   setupCycleStartDate: document.querySelector("#setupCycleStartDate"),
   setupCycleSubjects: document.querySelector("#setupCycleSubjects"),
+  setupTimetableImage: document.querySelector("#setupTimetableImage"),
+  setupTimetablePreview: document.querySelector("#setupTimetablePreview"),
+  setupTimetableStatus: document.querySelector("#setupTimetableStatus"),
+  setupTimetableText: document.querySelector("#setupTimetableText"),
+  setupAnalyzeTimetable: document.querySelector("#setupAnalyzeTimetable"),
+  setupApplyTimetable: document.querySelector("#setupApplyTimetable"),
+  setupTimetableResult: document.querySelector("#setupTimetableResult"),
   exportData: document.querySelector("#exportData"),
   copyTransferCode: document.querySelector("#copyTransferCode"),
   transferCode: document.querySelector("#transferCode"),
@@ -421,6 +429,9 @@ function wireEvents() {
 
   renderSetup();
   elements.setupForm.addEventListener("submit", handleSetupSubmit);
+  elements.setupTimetableImage.addEventListener("change", handleSetupTimetableImage);
+  elements.setupAnalyzeTimetable.addEventListener("click", handleSetupTimetableAnalyze);
+  elements.setupApplyTimetable.addEventListener("click", handleSetupTimetableApply);
   elements.exportData.addEventListener("click", handleExportData);
   elements.copyTransferCode.addEventListener("click", handleCopyTransferCode);
   elements.importData.addEventListener("click", handleImportData);
@@ -773,6 +784,120 @@ function handleSetupSubmit(event) {
   render();
   playSound("success");
   showToast("School setup saved. Planner regenerated.");
+}
+
+async function handleSetupTimetableImage(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  setupTimetableProposal = null;
+  elements.setupApplyTimetable.disabled = true;
+  elements.setupTimetableResult.innerHTML = `<p class="empty-state">Reading timetable image.</p>`;
+  elements.setupTimetablePreview.src = URL.createObjectURL(file);
+  elements.setupTimetablePreview.hidden = false;
+  elements.setupTimetableStatus.textContent = "Reading timetable image. Keep this page open.";
+  playSound("scan");
+  showToast("Reading timetable image.");
+
+  try {
+    const extracted = await extractTextFromImage(file, (message) => {
+      elements.setupTimetableStatus.textContent = message;
+    });
+
+    if (!extracted) {
+      elements.setupTimetableStatus.textContent = "No readable timetable text found. Use Live Text / Copy Text on the image, then paste it into the box.";
+      elements.setupTimetableResult.innerHTML = `<p class="empty-state">No timetable text found.</p>`;
+      playSound("warning");
+      return;
+    }
+
+    elements.setupTimetableText.value = extracted;
+    elements.setupTimetableStatus.textContent = "Text detected. Review it, fix obvious OCR mistakes, then click Analyze timetable.";
+    playSound("success");
+    showToast("Timetable text detected.");
+    handleSetupTimetableAnalyze();
+  } catch (error) {
+    elements.setupTimetableStatus.textContent = `Could not read this image: ${error.message}. Paste copied timetable text instead.`;
+    elements.setupTimetableResult.innerHTML = `<p class="empty-state">Image OCR failed. Paste text manually, then analyze.</p>`;
+    playSound("warning");
+  }
+}
+
+function handleSetupTimetableAnalyze() {
+  const text = cleanMultiline(elements.setupTimetableText.value);
+  if (!text) {
+    setupTimetableProposal = null;
+    elements.setupApplyTimetable.disabled = true;
+    elements.setupTimetableStatus.textContent = "Paste timetable text or upload a timetable image first.";
+    elements.setupTimetableResult.innerHTML = `<p class="empty-state">No timetable text to analyze.</p>`;
+    playSound("warning");
+    return;
+  }
+
+  setupTimetableProposal = buildTimetableImportProposal(text);
+  renderSetupTimetableProposal();
+  playSound(setupTimetableProposal ? "scan" : "warning");
+  showToast(setupTimetableProposal ? "Timetable detected. Review before applying." : "No timetable cycle found.");
+}
+
+function renderSetupTimetableProposal() {
+  elements.setupApplyTimetable.disabled = !setupTimetableProposal;
+
+  if (!setupTimetableProposal) {
+    elements.setupTimetableStatus.textContent =
+      "No Day 1-Day cycle found. Use the template: Date of Day 1, Cycle length, then Day 1: subjects, Day 2: subjects.";
+    elements.setupTimetableResult.innerHTML = `
+      <p class="empty-state">No timetable cycle detected yet. The parser needs at least two lines such as Day 1: Maths, English.</p>
+    `;
+    return;
+  }
+
+  const subjects = formatCycleSubjects(setupTimetableProposal.cycleSubjects, setupTimetableProposal.cycleLength);
+  elements.setupTimetableStatus.textContent =
+    `Detected a ${setupTimetableProposal.cycleLength}-day cycle. Check the classes below, then Apply to setup.`;
+  elements.setupTimetableResult.innerHTML = `
+    <article class="proposal-card">
+      <div class="panel-heading compact-heading">
+        <h3>${setupTimetableProposal.cycleLength}-day timetable detected</h3>
+        <span class="pill">confidence ${setupTimetableProposal.confidence}/4</span>
+      </div>
+      <p class="proposal-reason">${escapeHtml(setupTimetableProposal.reason)}</p>
+      <pre class="timetable-preview-text">${escapeHtml(subjects)}</pre>
+    </article>
+  `;
+}
+
+function handleSetupTimetableApply() {
+  if (!setupTimetableProposal) {
+    handleSetupTimetableAnalyze();
+    if (!setupTimetableProposal) return;
+  }
+
+  const schoolDays = [...elements.setupSchoolDays]
+    .filter((checkbox) => checkbox.checked)
+    .map((checkbox) => Number(checkbox.value));
+
+  state.schoolSettings = normalizeSchoolSettings({
+    ...state.schoolSettings,
+    setupComplete: true,
+    schoolName: elements.setupSchoolName.value || state.schoolSettings.schoolName,
+    schoolDays: schoolDays.length ? schoolDays : state.schoolSettings.schoolDays,
+    commuteStart: elements.setupCommuteStart.value || state.schoolSettings.commuteStart,
+    schoolStart: elements.setupSchoolStart.value || state.schoolSettings.schoolStart,
+    schoolEnd: elements.setupSchoolEnd.value || state.schoolSettings.schoolEnd,
+    cycleEnabled: true,
+    cycleLength: setupTimetableProposal.cycleLength,
+    cycleStartDate: setupTimetableProposal.cycleStartDate,
+    cycleSubjects: setupTimetableProposal.cycleSubjects,
+  });
+
+  generateStudyPlan();
+  saveState();
+  render();
+  switchView("setup");
+  elements.setupTimetableStatus.textContent = "Timetable applied. The classes now appear inside school-day schedule blocks.";
+  playSound("success");
+  showToast("Timetable classes imported into setup.");
 }
 
 function createTransferPayload() {
@@ -2073,7 +2198,9 @@ async function handleImportImage(event) {
   showToast("Screenshot added. OCR is reading it.");
 
   try {
-    const extracted = await extractTextFromImage(file);
+    const extracted = await extractTextFromImage(file, (message) => {
+      elements.importStatus.textContent = message;
+    });
 
     if (!extracted) {
       elements.importStatus.textContent = "OCR found no readable text. Use Live Text / Copy Text on the screenshot, then paste it here.";
@@ -2088,7 +2215,7 @@ async function handleImportImage(event) {
   }
 }
 
-async function extractTextFromImage(file) {
+async function extractTextFromImage(file, onStatus = null) {
   if ("TextDetector" in window) {
     try {
       const detector = new window.TextDetector();
@@ -2101,17 +2228,18 @@ async function extractTextFromImage(file) {
     }
   }
 
-  return extractTextWithTesseract(file);
+  return extractTextWithTesseract(file, onStatus);
 }
 
-async function extractTextWithTesseract(file) {
+async function extractTextWithTesseract(file, onStatus = null) {
   if (!navigator.onLine) throw new Error("online OCR library unavailable while offline");
 
   const { createWorker } = await import("https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.esm.min.js");
   const worker = await createWorker("eng", 1, {
     logger: (message) => {
       if (message.status === "recognizing text" && Number.isFinite(message.progress)) {
-        elements.importStatus.textContent = `OCR reading screenshot: ${Math.round(message.progress * 100)}%`;
+        const statusText = `OCR reading screenshot: ${Math.round(message.progress * 100)}%`;
+        if (onStatus) onStatus(statusText);
       }
     },
   });

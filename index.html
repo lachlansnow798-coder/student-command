@@ -8,16 +8,16 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Student Command" />
     <title>Student Command</title>
-    <link rel="manifest" href="manifest.webmanifest?v=37" />
-    <link rel="icon" href="icons/icon.svg?v=37" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=37" />
-    <link rel="stylesheet" href="styles.css?v=37" />
+    <link rel="manifest" href="manifest.webmanifest?v=38" />
+    <link rel="icon" href="icons/icon.svg?v=38" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=38" />
+    <link rel="stylesheet" href="styles.css?v=38" />
   </head>
   <body>
     <div class="app-shell">
       <aside class="sidebar" aria-label="Main navigation">
         <div class="brand">
-          <div class="brand-mark"><img src="icons/icon-192.png?v=37" alt="" /></div>
+          <div class="brand-mark"><img src="icons/icon-192.png?v=38" alt="" /></div>
           <div>
             <p>Student Command</p>
             <span>Grade 8 planner</span>
@@ -205,6 +205,41 @@
               <li>Paste cycle subjects in this exact format: <strong>Day 1: Maths, English, Science</strong>. One day per line.</li>
               <li>Press Save school setup. After that, add tutoring, sport, and clubs in Commitments.</li>
             </ol>
+          </section>
+
+          <section class="panel setup-ai-panel" aria-label="Timetable image import">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">AI timetable import</p>
+                <h3>Upload a timetable image</h3>
+              </div>
+              <button id="setupApplyTimetable" class="primary-button" type="button" disabled>Apply to setup</button>
+            </div>
+            <p class="helper-text">
+              Use this for school timetables. The app reads the image, detects Day 1, Day 2, Day 3 classes, then fills the cycle subjects below.
+              Review the result before applying.
+            </p>
+            <div class="setup-timetable-grid">
+              <div>
+                <label>
+                  Timetable image
+                  <input id="setupTimetableImage" type="file" accept="image/*" />
+                </label>
+                <img id="setupTimetablePreview" class="import-preview" alt="Timetable screenshot preview" hidden />
+                <p id="setupTimetableStatus" class="helper-text">Upload a clear screenshot or photo of the timetable. If OCR is messy, paste the copied text into the box.</p>
+              </div>
+              <label>
+                Detected timetable text
+                <textarea id="setupTimetableText" rows="9" placeholder="The app will put detected image text here. You can also paste text like:&#10;Date of Day 1: 2026-06-22&#10;Cycle length: 10&#10;Day 1: Maths, English, Science&#10;Day 2: Humanities, Art, PE"></textarea>
+              </label>
+            </div>
+            <div class="setup-timetable-actions">
+              <button id="setupAnalyzeTimetable" class="ghost-button" type="button">Analyze timetable</button>
+              <span class="helper-text">Best result: make sure each line says Day 1:, Day 2:, Day 3: before applying.</span>
+            </div>
+            <div id="setupTimetableResult" class="proposal-list setup-timetable-result">
+              <p class="empty-state">No timetable analyzed yet.</p>
+            </div>
           </section>
 
           <form id="setupForm" class="setup-form panel">
@@ -659,6 +694,6 @@
 
     <div id="appToast" class="app-toast" role="status" aria-live="polite"></div>
 
-    <script src="app.js?v=37"></script>
+    <script src="app.js?v=38"></script>
   </body>
 </html>
