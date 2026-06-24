@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#071b68" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Student Command" />
+    <title>Student Command</title>
+    <link rel="manifest" href="manifest.webmanifest?v=37" />
+    <link rel="icon" href="icons/icon.svg?v=37" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=37" />
+    <link rel="stylesheet" href="styles.css?v=37" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Main navigation">
+        <div class="brand">
+          <div class="brand-mark"><img src="icons/icon-192.png?v=37" alt="" /></div>
+          <div>
+            <p>Student Command</p>
+            <span>Grade 8 planner</span>
+          </div>
+        </div>
+
+        <nav class="nav-list" aria-label="Sections">
+          <button class="nav-item is-active" data-view="today" type="button">Today</button>
+          <button class="nav-item" data-view="setup" type="button">Setup</button>
+          <a class="nav-link" href="install.html">Install</a>
+          <button class="nav-item" data-view="tasks" type="button">Tasks</button>
+          <button class="nav-item" data-view="import" type="button">Import</button>
+          <button class="nav-item" data-view="quiz" type="button">Quiz</button>
+          <button class="nav-item" data-view="coach" type="button">Coach</button>
+          <button class="nav-item" data-view="chat" type="button">AI Chat</button>
+          <button class="nav-item" data-view="cozi" type="button">Cozi</button>
+          <button class="nav-item" data-view="routine" type="button">Commitments</button>
+        </nav>
+
+        <div class="focus-card">
+          <span class="eyebrow">Two-week proof</span>
+          <strong id="proofSignal">Add one test to start.</strong>
+            <p>Success means students complete the work before it becomes a crisis.</p>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Student planner for any school</p>
+            <h1>Plan school, study, sport, and projects <span class="headline-break">without guessing.</span></h1>
+          </div>
+          <div class="topbar-actions">
+            <button id="soundToggle" class="ghost-button" type="button">Sound on</button>
+            <button id="installApp" class="ghost-button install-button" type="button" hidden>Install app</button>
+            <a class="ghost-button topbar-link" href="install.html">Install guide</a>
+            <button id="resetDemo" class="ghost-button" type="button" title="Reload sample data">Reset demo</button>
+          </div>
+        </header>
+
+        <section class="metrics" aria-label="Current status">
+          <article class="metric">
+            <span>Next test</span>
+            <strong id="nextTestMetric">None</strong>
+          </article>
+          <article class="metric">
+            <span>Study blocks</span>
+            <strong id="studyMetric">0</strong>
+          </article>
+          <article class="metric">
+            <span>Readiness</span>
+            <strong id="readinessMetric">0%</strong>
+          </article>
+        </section>
+
+        <section class="view is-visible" id="todayView" data-panel="today">
+          <section class="command-layout" aria-label="Today command centre">
+            <div class="panel command-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Today command centre</p>
+                  <h2 id="todayTitle">Today</h2>
+                </div>
+                <span id="todayDateLabel">Today</span>
+              </div>
+
+              <div class="next-block">
+                <span>Next block</span>
+                <strong id="nextBlockTitle">No block found</strong>
+                <p id="nextBlockDetail">Your day is clear.</p>
+                <b id="nextBlockCountdown">No countdown</b>
+              </div>
+
+              <div class="panel-heading compact-heading">
+                <h3>Must-do 3</h3>
+                <span id="mustDoStatus">0 active</span>
+              </div>
+              <div id="todayMustDos" class="command-list"></div>
+            </div>
+
+            <form id="quickActivityForm" class="panel quick-activity-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Sudden activity</p>
+                  <h2>Quick add</h2>
+                </div>
+              </div>
+
+              <div class="quick-grid">
+                <label>
+                  Activity
+                  <input id="quickActivityName" type="text" placeholder="Dentist, family dinner, extra soccer" required />
+                </label>
+                <label>
+                  Date
+                  <input id="quickActivityDate" type="date" required />
+                </label>
+                <label>
+                  Start
+                  <input id="quickActivityStart" type="time" required />
+                </label>
+                <label>
+                  End
+                  <input id="quickActivityEnd" type="time" required />
+                </label>
+                <label>
+                  Type
+                  <select id="quickActivityType">
+                    <option value="activity">Activity</option>
+                    <option value="sport">Sport</option>
+                    <option value="class">Class</option>
+                    <option value="business">Project</option>
+                    <option value="family">Family</option>
+                    <option value="appointment">Appointment</option>
+                  </select>
+                </label>
+                <label class="full-field">
+                  Notes
+                  <input id="quickActivityDetail" type="text" placeholder="Optional detail" />
+                </label>
+              </div>
+
+              <button class="primary-button full-field" type="submit">Add to calendar</button>
+              <div id="quickActivityList" class="quick-activity-list"></div>
+            </form>
+          </section>
+
+          <section class="panel briefing-panel" aria-label="Smart daily briefing">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Smart daily briefing</p>
+                <h2>What matters today</h2>
+              </div>
+            </div>
+            <strong id="dailyBriefingLead" class="briefing-lead">Loading today.</strong>
+            <div id="dailyBriefingGrid" class="briefing-grid"></div>
+          </section>
+
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Generated plan</p>
+              <h2>Next 14 days</h2>
+            </div>
+            <button id="generatePlan" class="primary-button" type="button">Generate study plan</button>
+          </div>
+
+          <div class="planner-grid">
+            <div class="panel wide-panel">
+              <div class="panel-heading">
+                <h3>Schedule</h3>
+                <span id="scheduleRange">Next 14 days</span>
+              </div>
+              <div id="weekPlan" class="week-plan"></div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-heading">
+                <h3>Checklist</h3>
+                <span id="checklistCount">0 left</span>
+              </div>
+              <div id="checklist" class="checklist"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="setupView" data-panel="setup">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">First-run setup</p>
+              <h2>Make it fit your school</h2>
+            </div>
+          </div>
+
+          <section class="panel guide-panel" aria-label="Setup instructions">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Do this first</p>
+                <h3>Fast setup checklist</h3>
+              </div>
+            </div>
+            <ol class="guide-list">
+              <li>Enter the real school-day times. Use the time you leave home for commute, then the official school start and finish.</li>
+              <li>Select only the days that count as school days. For most schools this is Monday to Friday.</li>
+              <li>If the school uses Day 1, Day 2, Day 3, turn on the repeating cycle, set the cycle length, and enter the calendar date of Day 1.</li>
+              <li>Paste cycle subjects in this exact format: <strong>Day 1: Maths, English, Science</strong>. One day per line.</li>
+              <li>Press Save school setup. After that, add tutoring, sport, and clubs in Commitments.</li>
+            </ol>
+          </section>
+
+          <form id="setupForm" class="setup-form panel">
+            <div class="setup-grid">
+              <label>
+                School name
+                <input id="setupSchoolName" type="text" placeholder="Your school" />
+              </label>
+              <label>
+                Leave home / commute starts
+                <input id="setupCommuteStart" type="time" />
+              </label>
+              <label>
+                School starts
+                <input id="setupSchoolStart" type="time" required />
+              </label>
+              <label>
+                School ends
+                <input id="setupSchoolEnd" type="time" required />
+              </label>
+            </div>
+
+            <div class="setup-block">
+              <p class="eyebrow">School days</p>
+              <div class="weekday-picker" id="setupSchoolDays">
+                <label><input class="setup-school-day" type="checkbox" value="1" />Mon</label>
+                <label><input class="setup-school-day" type="checkbox" value="2" />Tue</label>
+                <label><input class="setup-school-day" type="checkbox" value="3" />Wed</label>
+                <label><input class="setup-school-day" type="checkbox" value="4" />Thu</label>
+                <label><input class="setup-school-day" type="checkbox" value="5" />Fri</label>
+                <label><input class="setup-school-day" type="checkbox" value="6" />Sat</label>
+                <label><input class="setup-school-day" type="checkbox" value="0" />Sun</label>
+              </div>
+            </div>
+
+            <div class="setup-grid">
+              <label class="switch-control setup-switch">
+                <input id="setupCycleEnabled" type="checkbox" />
+                <span>My timetable uses a repeating cycle</span>
+              </label>
+              <label>
+                Cycle length
+                <input id="setupCycleLength" type="number" min="1" max="20" />
+              </label>
+              <label>
+                Date of Day 1
+                <input id="setupCycleStartDate" type="date" />
+              </label>
+            </div>
+
+            <label>
+              Optional cycle subjects
+              <textarea id="setupCycleSubjects" rows="6" placeholder="Day 1: Maths, Science, English&#10;Day 2: History, Art, Sport&#10;Day 3: Chinese, PE, Humanities"></textarea>
+            </label>
+
+            <button class="primary-button" type="submit">Save school setup</button>
+          </form>
+
+          <section class="panel transfer-panel" aria-label="Move planner data between devices">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Device transfer</p>
+                <h2>Move your planner to your phone</h2>
+              </div>
+            </div>
+            <p class="helper-text">
+              Export on your Mac, then paste the code into Student Command on your iPhone. If WhatsApp shows Read
+              more, open the full message before copying. Your AI API key is never included.
+            </p>
+            <div class="transfer-grid">
+              <div class="transfer-block">
+                <h3>1. Export from this device</h3>
+                <button id="exportData" class="primary-button" type="button">Create short transfer code</button>
+                <button id="copyTransferCode" class="ghost-button" type="button">Copy code</button>
+                <textarea id="transferCode" rows="7" readonly placeholder="Your transfer code will appear here."></textarea>
+              </div>
+              <div class="transfer-block">
+                <h3>2. Import on your other device</h3>
+                <textarea id="importTransferCode" rows="7" placeholder="Paste a Student Command transfer code here."></textarea>
+                <button id="importData" class="primary-button" type="button">Import and replace this device</button>
+                <p class="helper-text">Paste the code only. The app will ignore extra WhatsApp text around it.</p>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="view" id="tasksView" data-panel="tasks">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Add the real work</p>
+              <h2>Tests, homework, and reminders</h2>
+            </div>
+          </div>
+
+          <form id="taskForm" class="task-form">
+            <label>
+              Type
+              <select id="taskType" required>
+                <option value="test">Test</option>
+                <option value="homework">Homework</option>
+                <option value="reminder">Reminder</option>
+              </select>
+            </label>
+            <label>
+              Subject
+              <input id="subject" type="text" placeholder="Maths" required />
+            </label>
+            <label>
+              Due date
+              <input id="dueDate" type="date" required />
+            </label>
+            <label>
+              Priority
+              <select id="priority">
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </label>
+            <label class="full-field">
+              Topics to know
+              <textarea id="topics" rows="3" placeholder="Linear equations, fractions, graphing, index laws"></textarea>
+            </label>
+            <button class="primary-button full-field" type="submit">Add task</button>
+          </form>
+
+          <div id="taskList" class="task-list"></div>
+        </section>
+
+        <section class="view" id="importView" data-panel="import">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Inbox to plan</p>
+              <h2>Paste or upload school info</h2>
+            </div>
+            <div class="import-actions">
+              <button id="analyzeImport" class="primary-button" type="button">Analyze import</button>
+              <button id="clearImport" class="ghost-button" type="button">Clear</button>
+            </div>
+          </div>
+
+          <div class="import-layout">
+            <div class="panel">
+              <h3>Source</h3>
+              <div class="import-guide">
+                <strong>What this page can import</strong>
+                <ol class="guide-list compact">
+                  <li>Tests, homework, assignments, and reminders from pasted school text.</li>
+                  <li>Timetable cycles when the text says <strong>Day 1:</strong>, <strong>Day 2:</strong>, etc.</li>
+                  <li>Screenshot images only after OCR turns the image into text. If OCR is messy, copy text from the image and paste it below.</li>
+                </ol>
+                <button id="insertTimetableTemplate" class="ghost-button" type="button">Insert timetable template</button>
+              </div>
+              <label>
+                Paste text
+                <textarea id="importText" rows="10" placeholder="For tasks: paste a Canvas assignment, email, or teacher note.&#10;&#10;For timetables, use:&#10;Day 1: Maths, English, Science&#10;Day 2: Humanities, Art, PE"></textarea>
+              </label>
+              <label>
+                Upload screenshot for OCR
+                <input id="importImage" type="file" accept="image/*" />
+              </label>
+              <p id="importStatus" class="helper-text">The app will propose changes first. Nothing is added until you accept. Timetable imports update Setup, not Tasks.</p>
+              <img id="importPreview" class="import-preview" alt="Uploaded screenshot preview" hidden />
+            </div>
+
+            <div class="panel">
+              <div class="panel-heading">
+                <h3>Proposed changes</h3>
+                <button id="acceptImport" class="primary-button" type="button" disabled>Accept selected</button>
+              </div>
+              <div id="importProposals" class="proposal-list">
+                <p class="empty-state">Paste text or upload a screenshot, then analyze it.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="quizView" data-panel="quiz">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Practice test</p>
+              <h2>Check if you actually know it</h2>
+            </div>
+            <div class="quiz-actions">
+              <button id="buildQuiz" class="primary-button" type="button">Generate quiz</button>
+              <button id="newQuizSet" class="ghost-button" type="button">New question set</button>
+            </div>
+          </div>
+
+          <div class="quiz-layout">
+            <div class="panel">
+              <h3>Quiz settings</h3>
+              <label>
+                Test
+                <select id="quizTask"></select>
+              </label>
+              <label>
+                Questions
+                <input id="questionCount" type="number" min="4" max="12" value="8" />
+              </label>
+              <p class="helper-text">The quiz uses your listed topics and subject. If the questions feel weak, your topic list is too vague.</p>
+            </div>
+            <div id="quizOutput" class="panel quiz-output"></div>
+          </div>
+        </section>
+
+        <section class="view" id="chatView" data-panel="chat">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Real AI connection</p>
+              <h2>General knowledge chatbot</h2>
+            </div>
+            <div class="quiz-actions">
+              <button id="clearChat" class="ghost-button" type="button">Clear chat</button>
+            </div>
+          </div>
+
+          <div class="chat-layout">
+            <div class="panel">
+              <h3>AI setup</h3>
+              <p class="helper-text">Default: free local Ollama. No API key is needed on a Mac once Ollama is installed and the model is downloaded.</p>
+              <label>
+                AI provider
+                <select id="aiProvider">
+                  <option value="ollama">Free local Ollama</option>
+                  <option value="openai">OpenAI API</option>
+                </select>
+              </label>
+              <label>
+                OpenAI API key (OpenAI mode only)
+                <input id="aiApiKey" type="password" placeholder="sk-..." autocomplete="off" />
+              </label>
+              <div class="api-key-actions">
+                <button id="pasteAiKey" class="ghost-button" type="button">Paste key</button>
+                <button id="toggleAiKeyVisibility" class="ghost-button" type="button">Show key</button>
+              </div>
+              <label>
+                Model
+                <input id="aiModel" type="text" value="llama3.2" />
+              </label>
+              <div class="chat-settings-actions">
+                <button id="saveAiSettings" class="primary-button" type="button">Save AI settings</button>
+                <button id="clearAiSettings" class="ghost-button" type="button">Clear key</button>
+                <button id="checkLocalAi" class="ghost-button" type="button">Check local AI</button>
+                <button id="openOllamaDownload" class="ghost-button" type="button">Get Ollama</button>
+              </div>
+              <p id="aiStatus" class="helper-text">Free local mode needs Ollama running at localhost:11434.</p>
+              <p class="helper-text local-ai-note">Mac setup: install Ollama, open it once, then run: ollama pull llama3.2</p>
+            </div>
+
+            <div class="panel chat-panel">
+              <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
+              <form id="aiChatForm" class="chat-form">
+                <label class="full-field">
+                  Ask anything
+                  <textarea id="aiPrompt" rows="3" placeholder="Ask a general knowledge question, or ask it to explain a school concept simply."></textarea>
+                </label>
+                <button id="sendAiPrompt" class="primary-button" type="submit">Ask AI</button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="coachView" data-panel="coach">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Strict coach mode</p>
+              <h2>No silent skipping</h2>
+            </div>
+            <button id="coachRegeneratePlan" class="primary-button" type="button">Rebuild with coach rules</button>
+          </div>
+
+          <div class="coach-layout">
+            <div class="panel coach-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Coach stance</p>
+                  <h3 id="coachModeTitle">Coach Mode</h3>
+                </div>
+                <label class="switch-control">
+                  <input id="coachModeToggle" type="checkbox" />
+                  <span>On</span>
+                </label>
+              </div>
+              <strong id="coachVerdict" class="coach-verdict">Loading coach verdict.</strong>
+              <p id="coachReason" class="helper-text">Coach Mode compares your plan against what actually happened.</p>
+              <label class="check-row coach-setting-row">
+                <input id="coachAutoReduce" type="checkbox" />
+                <span>
+                  <strong>Reduce project time when school is behind</strong>
+                  <span>Project time stays protected only after test prep and homework are under control.</span>
+                </span>
+              </label>
+            </div>
+
+            <div class="panel coach-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Accountability</p>
+                  <h3>Planned vs actual</h3>
+                </div>
+                <span id="coachScoreLabel">0%</span>
+              </div>
+              <div id="coachStats" class="coach-stats"></div>
+            </div>
+          </div>
+
+          <div class="coach-layout">
+            <form id="coachCheckinForm" class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">End-of-day check-in</p>
+                  <h3>Face the scoreboard</h3>
+                </div>
+              </div>
+              <label>
+                Date
+                <input id="coachCheckinDate" type="date" required />
+              </label>
+              <div id="coachCheckinList" class="coach-checkin-list"></div>
+              <label>
+                What actually happened?
+                <textarea id="coachRealityNote" rows="3" placeholder="Be specific. Finished maths? Skipped science? Why?"></textarea>
+              </label>
+              <label>
+                What changed tomorrow?
+                <textarea id="coachTomorrowChange" rows="2" placeholder="Example: soccer moved, extra homework, test added."></textarea>
+              </label>
+              <button class="primary-button" type="submit">Log check-in and replan</button>
+            </form>
+
+            <div class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Coach consequences</p>
+                  <h3>What changed</h3>
+                </div>
+              </div>
+              <div id="coachActionList" class="coach-action-list"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="coziView" data-panel="cozi">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Family calendar</p>
+              <h2>Link Cozi schedule</h2>
+            </div>
+            <div class="import-actions">
+              <button id="syncCozi" class="primary-button" type="button">Sync Cozi</button>
+              <button id="clearCozi" class="ghost-button" type="button">Clear Cozi events</button>
+            </div>
+          </div>
+
+          <div class="cozi-layout">
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <h3>Calendar link</h3>
+                  <p class="helper-text">Paste the shared Cozi calendar URL. It stays saved only on this device.</p>
+                </div>
+              </div>
+
+              <label>
+                Cozi shared calendar URL
+                <input id="coziUrl" type="url" placeholder="https://.../calendar.ics" />
+              </label>
+
+              <div class="cozi-help">
+                <h3>Where to get it</h3>
+                <ol>
+                  <li>Open Cozi settings.</li>
+                  <li>Open Shared Cozi Calendars.</li>
+                  <li>Choose All or one family member.</li>
+                  <li>Copy the Cozi URL and paste it here.</li>
+                </ol>
+              </div>
+              <p id="coziStatus" class="helper-text">No Cozi calendar linked yet.</p>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <h3>Manual fallback</h3>
+                  <p class="helper-text">If the browser blocks the link, paste the iCal text here and import it.</p>
+                </div>
+                <button id="importCoziText" class="primary-button" type="button">Import text</button>
+              </div>
+              <textarea id="coziIcsText" rows="10" placeholder="BEGIN:VCALENDAR&#10;BEGIN:VEVENT&#10;SUMMARY:Training&#10;DTSTART:20260624T163000&#10;DTEND:20260624T180000&#10;END:VEVENT&#10;END:VCALENDAR"></textarea>
+            </section>
+          </div>
+
+          <section class="panel cozi-events-panel">
+            <div class="panel-heading">
+              <h3>Imported Cozi events</h3>
+              <span id="coziEventCount">0 events</span>
+            </div>
+            <div id="coziEventList" class="cozi-event-list"></div>
+          </section>
+        </section>
+
+        <section class="view" id="routineView" data-panel="routine">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Fixed commitments</p>
+              <h2>Your school week and repeating blocks</h2>
+            </div>
+          </div>
+
+          <p class="helper-text routine-note">School hours come from Setup. Add weekly activities only when something repeats every week.</p>
+
+          <form id="routineForm" class="routine-form">
+            <label>
+              Activity
+              <input id="routineName" type="text" placeholder="Training, tutoring, club, work shift" required />
+            </label>
+            <label>
+              Day
+              <select id="routineDay">
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+                <option value="0">Sunday</option>
+              </select>
+            </label>
+            <label>
+              Start
+              <input id="routineStart" type="time" required />
+            </label>
+            <label>
+              End
+              <input id="routineEnd" type="time" required />
+            </label>
+            <button class="primary-button" type="submit">Add routine block</button>
+          </form>
+
+          <div id="routineList" class="routine-list"></div>
+        </section>
+      </main>
+    </div>
+
+    <template id="dayTemplate">
+      <article class="day-column">
+        <div class="day-title"></div>
+        <div class="day-events"></div>
+      </article>
+    </template>
+
+    <div id="appToast" class="app-toast" role="status" aria-live="polite"></div>
+
+    <script src="app.js?v=37"></script>
+  </body>
+</html>
