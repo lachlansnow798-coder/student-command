@@ -1,16 +1,16 @@
-const CACHE_NAME = "student-command-v38";
+const CACHE_NAME = "student-command-v39";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./install.html",
-  "./styles.css?v=38",
-  "./app.js?v=38",
-  "./manifest.webmanifest?v=38",
-  "./assets/command-sky-bg.png?v=38",
-  "./icons/icon.svg?v=38",
-  "./icons/icon-192.png?v=38",
-  "./icons/icon-512.png?v=38",
-  "./icons/apple-touch-icon.png?v=38",
+  "./styles.css?v=39",
+  "./app.js?v=39",
+  "./manifest.webmanifest?v=39",
+  "./assets/command-sky-bg.png?v=39",
+  "./icons/icon.svg?v=39",
+  "./icons/icon-192.png?v=39",
+  "./icons/icon-512.png?v=39",
+  "./icons/apple-touch-icon.png?v=39",
 ];
 
 self.addEventListener("install", (event) => {
@@ -29,6 +29,7 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  if (new URL(event.request.url).origin !== self.location.origin) return;
 
   event.respondWith(
     caches.match(event.request).then((cached) => {
